@@ -2,22 +2,32 @@ package distesal.sdnwisetry;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
+import java.util.List;
 
-public class MainActivity extends Activity {
+
+public class MainActivity extends Activity
+{
+    private ListView networkListView;
+    private ArrayAdapter<String> listAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        networkListView = (ListView) findViewById(R.id.networkListView);
+        listAdapter = new ArrayAdapter<String>(this, R.layout.simplerow);
+
+        listAdapter.add("Milardo e Milone");
+
+        networkListView.setAdapter(listAdapter);
 
         InputStream controllerInput = getResources().openRawResource(
                 getResources().getIdentifier("raw/config",
@@ -31,7 +41,7 @@ public class MainActivity extends Activity {
 
         SdnWise sw = new SdnWise(controllerInput,adaptInput,flowInput);
         sw.startExemplaryControlPlane();
-        //sw.startVirtualNetwork();
+
     }
 
     @Override

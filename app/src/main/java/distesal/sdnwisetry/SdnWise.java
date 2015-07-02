@@ -5,6 +5,8 @@ package distesal.sdnwisetry;
  */
 
 
+import android.app.Activity;
+
 import com.github.sdnwiselab.sdnwise.adaptation.Adaptation;
 import com.github.sdnwiselab.sdnwise.adaptation.AdaptationFactory;
 import com.github.sdnwiselab.sdnwise.configuration.Configurator;
@@ -15,15 +17,19 @@ import com.github.sdnwiselab.sdnwise.flowtable.FlowTableEntry;
 import com.github.sdnwiselab.sdnwise.flowtable.FlowTableWindow;
 import com.github.sdnwiselab.sdnwise.flowvisor.FlowVisor;
 import com.github.sdnwiselab.sdnwise.flowvisor.FlowVisorFactory;
+import com.github.sdnwiselab.sdnwise.graphStream.Graph;
 import com.github.sdnwiselab.sdnwise.node.SensorNode;
 import com.github.sdnwiselab.sdnwise.node.SinkNode;
 import com.github.sdnwiselab.sdnwise.packet.NetworkPacket;
+import com.github.sdnwiselab.sdnwise.topology.NetworkGraph;
 import com.github.sdnwiselab.sdnwise.util.NodeAddress;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +40,7 @@ import java.util.logging.Logger;
  * @author Sebastiano Milardo
  * @version 0.1
  */
-public final class SdnWise {
+public final class SdnWise extends Observable {
 
     /**
      * Starts the components of the SDN-WISE Controller. In its default
@@ -67,11 +73,15 @@ public final class SdnWise {
     private Controller controller;
     private InputStream controllerInputStream, adaptationInputStream, flowVisorInputStream;
 
-    public SdnWise(InputStream controllerInputStream, InputStream adaptationInputStream, InputStream flowVisorInputStream)
+    private Observer delegate;
+
+    public SdnWise(InputStream controllerInputStream, InputStream adaptationInputStream, InputStream flowVisorInputStream, Observer delegate)
     {
         this.controllerInputStream = controllerInputStream;
         this.adaptationInputStream = adaptationInputStream;
         this.flowVisorInputStream = flowVisorInputStream;
+
+        this.delegate = delegate;
     }
 
     /**
@@ -122,6 +132,11 @@ public final class SdnWise {
      * @return the Controller layer of the current SDN-WISE network.
      */
 
+    public Graph getNetworkGraph(Controller controller)
+    {
+        return controller.getNetworkGraph().getGraph();
+    }
+
     public Controller startController()
     {
         //InputStream configFileURI = this.getClass().getResourceAsStream("/config.ini");
@@ -130,6 +145,7 @@ public final class SdnWise {
         Configurator conf = Configurator.load(controllerInputStream);
         controller = ControllerFactory.getController(conf.getController());
         new Thread(controller).start();
+        controller.getNetworkGraph().addObserver(delegate);
         return controller;
     }
 
@@ -167,6 +183,7 @@ public final class SdnWise {
         }
         Configurator conf = Configurator.load(configFileURI);
         controller = ControllerFactory.getController(conf.getController());
+
         new Thread(controller).start();
         return controller;
     }

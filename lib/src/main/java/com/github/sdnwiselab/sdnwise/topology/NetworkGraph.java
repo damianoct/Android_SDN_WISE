@@ -121,7 +121,7 @@ public class NetworkGraph extends Observable {
         if (node == null) { // questo nodo non è presente nel grafo
             node = addNode(fullNodeId);
             setupNode(node, batt, now, netId, addr);
-            System.out.println("\n\n[AGGIUNTO NODO] \t\t\t"
+            /*System.out.println("\n\n[AGGIUNTO NODO] \t\t\t"
                                         + node.toString()
                                         + " Batt: "
                                         + batt
@@ -129,7 +129,9 @@ public class NetworkGraph extends Observable {
                                         + netId
                                         + " addr: "
                                         + addr
-                                        + "\n\n");
+                                        + "\n\n");*/
+            setChanged();
+            notifyObservers(node);
 
 
             for (int i = 0; i < packet.getNeigh(); i++) {
@@ -138,12 +140,23 @@ public class NetworkGraph extends Observable {
                 if (getNode(other) == null) {
                     Node tmp = addNode(other);
                     setupNode(tmp, 0, now, netId, otheraddr);
+
+                    setChanged();
+                    notifyObservers(tmp);
                 }
 
                 int newLen = 255 - packet.getNeighbourWeight(i);
                 String edgeId = other + "-" + fullNodeId;
                 Edge edge = addEdge(edgeId, other, node.getId(), true);
                 setupEdge(edge, newLen);
+
+                /*Node n = graph.getNode(other);
+                System.out.println("\t\tNeighbor Nodo: "+ n.getId());
+                for (Edge e : n.getEachEdge()) {
+
+                    System.out.println("\t\t\t\t"+ e.getOpposite(n));
+                }*/
+
             }
             modified = true;
 
@@ -160,6 +173,8 @@ public class NetworkGraph extends Observable {
                 if (getNode(other) == null) {
                     Node tmp = addNode(other);
                     setupNode(tmp, 0, now, netId, otheraddr);
+                    setChanged();
+                    notifyObservers(tmp);
                 }
 
                 int newLen = 255 - packet.getNeighbourWeight(i);
@@ -178,6 +193,13 @@ public class NetworkGraph extends Observable {
                     setupEdge(tmp, newLen);
                     modified = true;
                 }
+
+                /*Node n = graph.getNode(other);
+                System.out.println("\t\tNeighbor Nodo: "+ n.getId());
+                for (Edge e : n.getEachEdge()) {
+
+                    System.out.println("\t\t\t\t" + e.getOpposite(n));
+                }*/
             }
 
             if (!oldEdges.isEmpty()) {
@@ -188,8 +210,9 @@ public class NetworkGraph extends Observable {
             }
         }
 
-        for(Node n: graph.getEachNode())
-            System.out.println("STAMPA IN UPDATEMAP \t\t\t"+n.toString());
+        setChanged();
+        notifyObservers("Finito");
+
 
         if (modified) {
             lastModification++;
@@ -200,6 +223,16 @@ public class NetworkGraph extends Observable {
 
     final boolean isAlive(long threashold, long lastSeen, long now) {
         return ((now - lastSeen) < threashold * 1000);
+    }
+
+    public void getNeightbor(Node n)
+    {
+        System.out.println("\t\tNeighbor Nodo: "+ n.getId());
+        for (Edge e : n.getEachEdge())
+        {
+
+            System.out.println("\t\t\t\t" + e.getOpposite(n));
+        }
     }
 
     void setupNode(Node node, int batt, long now, int netId, NodeAddress addr) {

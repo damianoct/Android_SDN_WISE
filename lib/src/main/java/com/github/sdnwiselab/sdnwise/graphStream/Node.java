@@ -31,6 +31,7 @@
  */
 package com.github.sdnwiselab.sdnwise.graphStream;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 

@@ -4,13 +4,39 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class PopUpDetailNode extends Activity {
+
+    private ListView networkListView;
+    private ArrayAdapter<String> listAdapter;
+    private TextView nodeIdTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pop_up_detail_node);
+
+        networkListView = (ListView) findViewById(R.id.neighborListView);
+        nodeIdTextView = (TextView) findViewById(R.id.nodeIdtextView);
+        listAdapter = new ArrayAdapter<String>(this, R.layout.simplerow);
+        networkListView.setAdapter(listAdapter);
+
+        nodeIdTextView.append(" " + getIntent().getStringExtra("idNodo"));
+        ArrayList<String> neighbors = getIntent().getStringArrayListExtra("lista_nodi_vicini");
+        HashSet<String> hs = new HashSet<String>();
+        hs.addAll(neighbors);
+
+        for(String neighbor: hs)
+        {
+            listAdapter.add(neighbor);
+        }
+
     }
 
     @Override

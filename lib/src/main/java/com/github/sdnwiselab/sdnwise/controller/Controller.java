@@ -29,6 +29,7 @@ import com.github.sdnwiselab.sdnwise.topology.NetworkGraph;
 import com.github.sdnwiselab.sdnwise.util.NodeAddress;
 import java.io.File;
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -120,6 +121,10 @@ public abstract class Controller implements Observer, Runnable, ControllerInterf
 
     private void managePacket(NetworkPacket data) {
         System.err.println("[CTR]: " + data.toString());
+        /*DatagramPacket dp = new DatagramPacket(data.toByteArray(), data.toByteArray().length);
+        String rcvd = new String(dp.getData(), 0, dp.getLength());
+        System.err.println("[CTR] HUMAN READABLE: " + rcvd);*/
+        System.err.println("[CTR] HUMAN READABLE: " + data.getSrc().toString());
 
         switch (data.getType()) {
             case SDN_WISE_REPORT:
@@ -895,7 +900,9 @@ public abstract class Controller implements Observer, Runnable, ControllerInterf
         public void run() {
             while (!isStopped) {
                 try {
-                    managePacket(bQ.take());
+                    NetworkPacket packetToManage = bQ.take();
+                    System.out.println("\n\nPACKET TO MANAGE SRC: " + packetToManage.getSrc().toString()+ "\n\n");
+                    managePacket(packetToManage);
                 } catch (InterruptedException ex) {
                     isStopped = true;
                 }

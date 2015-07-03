@@ -48,7 +48,6 @@ public class MainActivity extends Activity implements Observer
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l)
             {
                 Intent intent = new Intent(getApplicationContext(), PopUpDetailNode.class);
-                //intent.putExtra("nodo", listAdapter.getItem(i));
 
                 ArrayList<String> neighborNodes = new ArrayList<String>();
 
@@ -60,6 +59,7 @@ public class MainActivity extends Activity implements Observer
                     neighborNodes.add(e.getOpposite(n).toString());
                 }
                 intent.putStringArrayListExtra("lista_nodi_vicini", neighborNodes);
+                intent.putExtra("idNodo", listAdapter.getItem(i).getId());
                 startActivity(intent);
             }
         });
@@ -103,17 +103,32 @@ public class MainActivity extends Activity implements Observer
         return super.onOptionsItemSelected(item);
     }
 
+    public boolean nodeExists(Node n)
+    {
+        if(!listAdapter.isEmpty())
+        {
+            for(int i = 0; i < listAdapter.getCount(); i++)
+            {
+                if (listAdapter.getItem(i).getId().equals(n.getId()))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     public void refreshList(final Node n)
     {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run()
-            {
-                listAdapter.add(n);
-                listAdapter.notifyDataSetChanged();
-
-            }
-        });
+        if(!nodeExists(n))
+        {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        listAdapter.add(n);
+                        listAdapter.notifyDataSetChanged();
+                    }
+                });
+        }
     }
 
     @Override
@@ -123,7 +138,6 @@ public class MainActivity extends Activity implements Observer
         {
             if(o.equals("Finito"))
             {
-                System.out.println("FINITO");
                 for(int i = 0; i < listAdapter.getCount(); i++)
                 {
                     Node n = listAdapter.getItem(i);

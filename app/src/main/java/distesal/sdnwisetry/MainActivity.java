@@ -16,7 +16,7 @@ import com.github.sdnwiselab.sdnwise.graphStream.Node;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Comparator;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -25,6 +25,7 @@ public class MainActivity extends Activity implements Observer
 {
     private ListView networkListView;
     private ArrayAdapter<Node> listAdapter;
+    private Comparator<Node> nodeComparator;
 
     private SdnWise sw;
     private Graph graph;
@@ -34,12 +35,25 @@ public class MainActivity extends Activity implements Observer
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //crisp comparator
+        nodeComparator = new Comparator<Node>()
+        {
+            @Override
+            public int compare(Node n1, Node n2)
+            {
+                if(n1.getId().length() > n2.getId().length())
+                    return 1;
+
+                if(n1.getId().length() < n2.getId().length())
+                    return -1;
+
+                else
+                    return n1.getId().compareTo(n2.getId());
+            }
+        };
 
         networkListView = (ListView) findViewById(R.id.networkListView);
         listAdapter = new ArrayAdapter<Node>(this, R.layout.simplerow);
-
-        //listAdapter.add("Network Nodes:");
-
 
         networkListView.setAdapter(listAdapter);
 
@@ -55,9 +69,9 @@ public class MainActivity extends Activity implements Observer
 
                 for (Edge e : n.getEachEdge())
                 {
-                    System.out.println("\t\t\t\t" + e.getOpposite(n));
                     neighborNodes.add(e.getOpposite(n).toString());
                 }
+
                 intent.putStringArrayListExtra("lista_nodi_vicini", neighborNodes);
                 intent.putExtra("idNodo", listAdapter.getItem(i).getId());
                 startActivity(intent);
@@ -67,14 +81,8 @@ public class MainActivity extends Activity implements Observer
         InputStream controllerInput = getResources().openRawResource(
                 getResources().getIdentifier("raw/config",
                         "raw", getPackageName()));
-        InputStream adaptInput = getResources().openRawResource(
-                getResources().getIdentifier("raw/config_adapt",
-                        "raw", getPackageName()));
-        InputStream flowInput = getResources().openRawResource(
-                getResources().getIdentifier("raw/config_flow",
-                        "raw", getPackageName()));
 
-        sw = new SdnWise(controllerInput,adaptInput,flowInput, this);
+        sw = new SdnWise(controllerInput,this);
         sw.addObserver(this);
         sw.startExemplaryControlPlane();
         graph = sw.getNetworkGraph(sw.getController());
@@ -117,18 +125,34 @@ public class MainActivity extends Activity implements Observer
         return false;
     }
 
+    public void removeNodeIfExists(Node n)
+    {
+        if (!listAdapter.isEmpty()) {
+            for (int i = 0; i < listAdapter.getCount(); i++)
+            {
+                if (listAdapter.getItem(i).getId().equals(n.getId()))
+                {
+                    listAdapter.remove(listAdapter.getItem(i));
+                    listAdapter.sort(nodeComparator);
+                }
+            }
+        }
+    }
+
+
     public void refreshList(final Node n)
     {
-        if(!nodeExists(n))
+        runOnUiThread(new Runnable()
         {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        listAdapter.add(n);
-                        listAdapter.notifyDataSetChanged();
-                    }
-                });
-        }
+            @Override
+            public void run()
+            {
+                removeNodeIfExists(n);
+                listAdapter.add(n);
+                listAdapter.sort(nodeComparator);
+                listAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     @Override

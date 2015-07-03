@@ -5,8 +5,6 @@ package distesal.sdnwisetry;
  */
 
 
-import android.app.Activity;
-
 import com.github.sdnwiselab.sdnwise.adaptation.Adaptation;
 import com.github.sdnwiselab.sdnwise.adaptation.AdaptationFactory;
 import com.github.sdnwiselab.sdnwise.configuration.Configurator;
@@ -21,7 +19,6 @@ import com.github.sdnwiselab.sdnwise.graphStream.Graph;
 import com.github.sdnwiselab.sdnwise.node.SensorNode;
 import com.github.sdnwiselab.sdnwise.node.SinkNode;
 import com.github.sdnwiselab.sdnwise.packet.NetworkPacket;
-import com.github.sdnwiselab.sdnwise.topology.NetworkGraph;
 import com.github.sdnwiselab.sdnwise.util.NodeAddress;
 
 import java.io.FileInputStream;
@@ -75,12 +72,9 @@ public final class SdnWise extends Observable {
 
     private Observer delegate;
 
-    public SdnWise(InputStream controllerInputStream, InputStream adaptationInputStream, InputStream flowVisorInputStream, Observer delegate)
+    public SdnWise(InputStream controllerInputStream, Observer delegate)
     {
         this.controllerInputStream = controllerInputStream;
-        this.adaptationInputStream = adaptationInputStream;
-        this.flowVisorInputStream = flowVisorInputStream;
-
         this.delegate = delegate;
     }
 

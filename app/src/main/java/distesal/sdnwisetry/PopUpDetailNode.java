@@ -11,6 +11,11 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+/**
+ * @author Damiano Di Stefano
+ * @author Marco Giuseppe Salafia
+ */
+
 public class PopUpDetailNode extends Activity {
 
     private ListView networkListView;

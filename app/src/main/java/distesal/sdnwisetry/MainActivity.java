@@ -2,6 +2,7 @@ package distesal.sdnwisetry;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,13 +21,18 @@ import java.util.Comparator;
 import java.util.Observable;
 import java.util.Observer;
 
+/**
+ * @author Damiano Di Stefano
+ * @author Marco Giuseppe Salafia
+ */
+
 
 public class MainActivity extends Activity implements Observer
 {
     private ListView networkListView;
     private ArrayAdapter<Node> listAdapter;
     private Comparator<Node> nodeComparator;
-
+    private AsyncTask<Activity, Integer, Void> processoAsync;
     private SdnWise sw;
     private Graph graph;
 
@@ -34,6 +40,23 @@ public class MainActivity extends Activity implements Observer
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        processoAsync = new AsyncTask<Activity, Integer, Void>() {
+            @Override
+            protected Void doInBackground(Activity... activity)
+            {
+                InputStream controllerInput = getResources().openRawResource(
+                        getResources().getIdentifier("raw/config",
+                                "raw", getPackageName()));
+
+                sw = new SdnWise(controllerInput,(Observer) activity[0]);
+                sw.addObserver((Observer) activity[0]);
+                sw.startExemplaryControlPlane();
+                graph = sw.getNetworkGraph(sw.getController());
+                return null;
+            }
+        };
+
 
         //crisp comparator
         nodeComparator = new Comparator<Node>()
@@ -78,14 +101,7 @@ public class MainActivity extends Activity implements Observer
             }
         });
 
-        InputStream controllerInput = getResources().openRawResource(
-                getResources().getIdentifier("raw/config",
-                        "raw", getPackageName()));
-
-        sw = new SdnWise(controllerInput,this);
-        sw.addObserver(this);
-        sw.startExemplaryControlPlane();
-        graph = sw.getNetworkGraph(sw.getController());
+        processoAsync.execute(this);
 
     }
 
@@ -109,6 +125,12 @@ public class MainActivity extends Activity implements Observer
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        // nothing.
     }
 
     public boolean nodeExists(Node n)
